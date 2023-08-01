@@ -5,6 +5,7 @@ import About from "../pages/About";
 import Contact from "../pages/Contact";
 import Student from "../pages/Student";
 import StudentCreate from "../pages/StudentCreate";
+import StudentEdit from "../pages/StudentEdit";
 
 const Router = () => {
   return (
@@ -14,6 +15,7 @@ const Router = () => {
       <Route path="/contact-us" element={<Contact />} />
       <Route path="/students" element={<Student />} />
       <Route path="/students/create" element={<StudentCreate />} />
+      <Route path="/students/:id/edit" element={<StudentEdit />} />
     </Routes>
   );
 };

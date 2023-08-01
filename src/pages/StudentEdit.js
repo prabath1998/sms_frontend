@@ -1,29 +1,56 @@
 import axios from "axios";
-import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import Loader from "../components/Loader";
 import { ToastContainer, toast } from "react-toastify";
 
 import "react-toastify/dist/ReactToastify.css";
+import { Oval } from "react-loader-spinner";
 
-const StudentCreate = () => {
-  const [student, setStudent] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    course: "",
-  });
+const StudentEdit = () => {
+  let { id } = useParams();
+  const [student, setStudent] = useState({});
 
   const [inputerrorList, setInputErrorList] = useState({});
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    axios.get(`http://127.0.0.1:8000/api/students/${id}/edit`).then((res) => {
+      setStudent(res.data.student);
+      setLoading(false);
+    }).catch(function (error) {
+        if (error.response) {
+          
+          if (error.response.status === 500) {
+            alert(error.response.data);
+            setLoading(false);
+          }
+          if (error.response.status === 404) {
+            // alert(error.response.data.message);
+            toast.error(error.response.data.message, {
+                position: "top-right",
+                autoClose: 5000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: "colored",
+                });
+            setLoading(false);
+            // navigate(`/students`)
+          }
+        }
+      });;
+  }, [id]);
 
   const handleInput = (e) => {
     e.persist();
     setStudent({ ...student, [e.target.name]: e.target.value });
   };
 
-  const saveStudent = (e) => {
+  const updateStudent = (e) => {
     e.preventDefault();
     setLoading(true);
     const data = {
@@ -34,11 +61,12 @@ const StudentCreate = () => {
     };
 
     axios
-      .post(`http://127.0.0.1:8000/api/students`, data)
+      .put(`http://127.0.0.1:8000/api/students/${id}/edit`, data)
       .then((res) => {
+        // alert(res.data.message);
         toast.success(res.data.message, {
           position: "top-right",
-          autoClose: 5000,
+          autoClose: 3000,
           hideProgressBar: false,
           closeOnClick: true,
           pauseOnHover: true,
@@ -47,7 +75,7 @@ const StudentCreate = () => {
           theme: "colored",
         });
         setLoading(false);
-        navigate("/students");
+        // navigate("/students");
       })
       .catch(function (error) {
         if (error.response) {
@@ -59,31 +87,66 @@ const StudentCreate = () => {
             alert(error.response.data);
             setLoading(false);
           }
+          if (error.response.status === 404) {
+            // alert(error.response.data.message);
+            toast.error(error.response.data.message, {
+                position: "top-right",
+                autoClose: 5000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: "colored",
+                });
+            setLoading(false);
+          }
         }
       });
   };
 
   if (loading) {
     return <Loader />;
+//     return <Oval
+//     height={80}
+//     width={80}
+//     color="#4fa94d"
+//     wrapperStyle={{}}
+//     wrapperClass=""
+//     visible={true}
+//     ariaLabel='oval-loading'
+//     secondaryColor="#4fa94d"
+//     strokeWidth={2}
+//     strokeWidthSecondary={2}
+  
+//   />;
   }
 
+  if(Object.keys(student).length === 0){
+    return (
+        <div className="container">
+            <ToastContainer />
+            <h4>No such student found!! </h4>
+        </div>
+    )
+  }
   return (
     <div>
-       <ToastContainer />
+      <ToastContainer />
       <div className="container mt-3">
         <div className="row">
           <div className="col-md-12">
             <div className="card">
               <div className="card-header">
                 <h4>
-                  Add student{" "}
+                  Edit student{" "}
                   <Link to="/students" className="btn btn-warning float-end">
                     Back
                   </Link>
                 </h4>
               </div>
               <div className="card-body">
-                <form onSubmit={saveStudent}>
+                <form onSubmit={updateStudent}>
                   <div className="mb-3">
                     <label>Name</label>
                     <input
@@ -131,7 +194,7 @@ const StudentCreate = () => {
                   </div>
                   <div className="mb-3">
                     <button type="submit" className="btn btn-primary">
-                      Save
+                      Update
                     </button>
                   </div>
                 </form>
@@ -144,4 +207,4 @@ const StudentCreate = () => {
   );
 };
 
-export default StudentCreate;
+export default StudentEdit;
